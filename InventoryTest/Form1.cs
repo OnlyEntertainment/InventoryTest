@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -13,10 +14,21 @@ namespace InventoryTest
 {
     public partial class Form1 : Form
     {
+        private struct InventoryEntry
+        {
+            public Item item;
+            public int quantity;
+            public float gewichtGesamt;
+            public float wertGesamt;
+            public float quality;
+        }
 
         Dictionary<int, Item> itemList = new Dictionary<int, Item>();
 
-        Dictionary<String, Item> inventory = new Dictionary<String, Item>();
+        //Dictionary<String, Item> inventory = new Dictionary<String, Item>();
+        List<InventoryEntry> inventory = new List<InventoryEntry>();
+
+        //InventoryEntry[] inventory = new InventoryEntry[2]();
 
         ToolTip inventoryToolTip = new ToolTip();
 
@@ -34,7 +46,7 @@ namespace InventoryTest
 
             inventoryToolTip.ReshowDelay = 0;
             inventoryToolTip.AutomaticDelay = 0;
-            inventoryToolTip.AutoPopDelay = 1000;
+            inventoryToolTip.AutoPopDelay = 2000;
 
         }
 
@@ -212,20 +224,49 @@ namespace InventoryTest
             }
         }
 
+
+
         private void btnItemAdd_Click(object sender, EventArgs e)
         {
             if (tbID.Text != "")
             {
-                if (inventory.ContainsKey(tbID.Text+"#"+nudQuality.Value.ToString())) //Quantity + 1
+
+                InventoryEntry invEntry;
+                for (int i = 0; i < inventory.Count; i++)
+                //foreach (InventoryEntry invEntry in inventory)
                 {
-                    inventory[tbID.Text + "#" + nudQuality.Value.ToString()].quantity++;
+                    if (inventory[i].item.id.ToString() == tbID.Text && inventory[i].quality == (float)nudQuality.Value)
+                    {
+                        invEntry = inventory[i];
+                        invEntry.quantity++;
+                        invEntry.gewichtGesamt = invEntry.item.gewicht * invEntry.quantity;
+                        invEntry.wertGesamt = (invEntry.item.wert * invEntry.quantity)*((float)nudQuality.Value / 100.0f);
+                        inventory[i] = invEntry;
+                        RefreshInventoryView();
+                        return;
+                    }
                 }
-                else
-                {
-                    Item item = itemList[int.Parse(tbID.Text)];
-                    item.quality = (float)(nudQuality.Value);
-                    inventory.Add(tbID.Text + "#" + nudQuality.Value.ToString(), item);
-                }
+
+                Item item = itemList[int.Parse(tbID.Text)];
+                invEntry = new InventoryEntry();
+                invEntry.item = item;
+                invEntry.quantity = 1;
+                invEntry.gewichtGesamt = item.gewicht;
+                invEntry.wertGesamt = item.wert *((float)nudQuality.Value/100.0f);
+                invEntry.quality = (float)nudQuality.Value;
+                inventory.Add(invEntry);
+
+                //if (inventory.ContainsKey(tbID.Text + "#" + nudQuality.Value.ToString())) //Quantity + 1
+                //{
+
+                //    inventory[tbID.Text + "#" + nudQuality.Value.ToString()].quantity++;
+                //}
+                //else
+                //{
+                //    Item item = itemList[int.Parse(tbID.Text)];
+                //    item.quality = (float)(nudQuality.Value);
+                //    inventory.Add(tbID.Text + "#" + nudQuality.Value.ToString(), item);
+                //}
                 RefreshInventoryView();
             }
 
@@ -234,12 +275,18 @@ namespace InventoryTest
         private void RefreshInventoryView()
         {
             dgInventory.Rows.Clear();
-            foreach (Item item in inventory.Values)
+
+            for (int i = 0; i < inventory.Count; i++)
             {
                 DataGridViewRow row = dgInventory.Rows[dgInventory.Rows.Add()];
-                row.Cells[dgInventoryID.Name].Value = item.id.ToString()+"#"+item.quality.ToString();
-                row.Cells[dgInventoryName.Name].Value = item.name.ToString();
-                row.Cells[dgInventoryQuantity.Name].Value = item.quantity.ToString();
+
+                row.Cells[dgInventoryID.Name].Value = i.ToString();
+                row.Cells[dgInventoryName.Name].Value = inventory[i].item.name;
+                row.Cells[dgInventoryQuantity.Name].Value = inventory[i].quantity;
+
+                //row.Cells[dgInventoryID.Name].Value = item.id.ToString() + "#" + item.quality.ToString();
+                //row.Cells[dgInventoryName.Name].Value = item.name.ToString();
+                //row.Cells[dgInventoryQuantity.Name].Value = item.quantity.ToString();
             }
 
         }
@@ -247,29 +294,50 @@ namespace InventoryTest
         private void dgInventory_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
         {
 
-
-
             dgInventory.ShowCellToolTips = false;
             if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
             {
-                String  id = dgInventory.Rows[e.RowIndex].Cells[dgInventoryID.Name].Value.ToString();
+                int id = int.Parse(dgInventory.Rows[e.RowIndex].Cells[dgInventoryID.Name].Value.ToString());
                 DataGridViewCell curCell = dgInventory.Rows[e.RowIndex].Cells[e.ColumnIndex];
-                Item item = inventory[id];
-                curCell.ToolTipText =
-                    item.name + "\n" +
-                    "Wert = " + item.wert.ToString() + "\n" +
-                    "Qualität = " + item.quality.ToString() + "\n" +
-                    "Gewicht = " + item.gewicht.ToString() + "\n" +
-                    "GewichtGes = " + (item.gewicht * item.quantity).ToString();
+                InventoryEntry invEntry = inventory[id];
+                //curCell.ToolTipText =
+                //    invEntry.item.name + "\n" +
+                //    "Qualität = " + invEntry.quality.ToString() + "\n" +
+                //    "Wert = " + invEntry.wertGesamt.ToString() + "(" + invEntry.item.wert.ToString() + ")\n" +
+                //    "Gewicht = " + invEntry.gewichtGesamt.ToString() + "(" + invEntry.item.gewicht.ToString() + ")\n";
 
 
-                inventoryToolTip.SetToolTip(dgInventory, item.name + "\n" +
-        "Wert = " + item.wert.ToString() + "\n" +
-        "Qualität = " + item.quality.ToString() + "\n" +
-        "Gewicht = " + item.gewicht.ToString() + "\n" +
-        "GewichtGes = " + (item.gewicht * item.quantity).ToString());
+                inventoryToolTip.SetToolTip(dgInventory,
+                    invEntry.item.name + "\n" +
+                    "Qualität = " + invEntry.quality.ToString() + "\n" +
+                    "Anzahl = " + invEntry.quantity.ToString() + "\n" +
+                    "Wert = " + invEntry.wertGesamt.ToString("0.##") + "(" + invEntry.item.wert.ToString() + ")\n" +
+                    "Gewicht = " + invEntry.gewichtGesamt.ToString() + "(" + invEntry.item.gewicht.ToString() + ")\n");
             }
             Console.WriteLine("Enter: " + e.RowIndex.ToString());
+
+
+            //    dgInventory.ShowCellToolTips = false;
+            //    if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            //    {
+            //        String id = dgInventory.Rows[e.RowIndex].Cells[dgInventoryID.Name].Value.ToString();
+            //        DataGridViewCell curCell = dgInventory.Rows[e.RowIndex].Cells[e.ColumnIndex];
+            //        Item item = inventory[id];
+            //        curCell.ToolTipText =
+            //            item.name + "\n" +
+            //            "Wert = " + item.wert.ToString() + "\n" +
+            //            "Qualität = " + item.quality.ToString() + "\n" +
+            //            "Gewicht = " + item.gewicht.ToString() + "\n" +
+            //            "GewichtGes = " + (item.gewicht * item.quantity).ToString();
+
+
+            //        inventoryToolTip.SetToolTip(dgInventory, item.name + "\n" +
+            //"Wert = " + item.wert.ToString() + "\n" +
+            //"Qualität = " + item.quality.ToString() + "\n" +
+            //"Gewicht = " + item.gewicht.ToString() + "\n" +
+            //"GewichtGes = " + (item.gewicht * item.quantity).ToString());
+            //    }
+            //    Console.WriteLine("Enter: " + e.RowIndex.ToString());
 
         }
 
