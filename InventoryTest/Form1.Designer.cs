@@ -41,23 +41,29 @@
             this.nudValue = new System.Windows.Forms.NumericUpDown();
             this.sliderQuality = new System.Windows.Forms.TrackBar();
             this.nudQuality = new System.Windows.Forms.NumericUpDown();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dgInventory = new System.Windows.Forms.DataGridView();
             this.helpProvider1 = new System.Windows.Forms.HelpProvider();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.ItemToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.btnXMLSave = new System.Windows.Forms.Button();
+            this.btnXMLLoad = new System.Windows.Forms.Button();
+            this.btnItemAdd = new System.Windows.Forms.Button();
+            this.dgInventoryID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgInventoryQuantity = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dgInventoryName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.nudGewicht)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sliderQuality)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuality)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgInventory)).BeginInit();
             this.SuspendLayout();
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(564, 304);
+            this.btnSave.Location = new System.Drawing.Point(515, 275);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(121, 23);
+            this.btnSave.Size = new System.Drawing.Size(203, 23);
             this.btnSave.TabIndex = 0;
-            this.btnSave.Text = "button1";
+            this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
             // 
@@ -167,20 +173,84 @@
             0});
             this.nudQuality.ValueChanged += new System.EventHandler(this.nudQuality_ValueChanged);
             // 
-            // dataGridView1
+            // dgInventory
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(12, 12);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(240, 150);
-            this.dataGridView1.TabIndex = 16;
+            this.dgInventory.AllowUserToAddRows = false;
+            this.dgInventory.AllowUserToDeleteRows = false;
+            this.dgInventory.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgInventory.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgInventoryID,
+            this.dgInventoryQuantity,
+            this.dgInventoryName});
+            this.dgInventory.Location = new System.Drawing.Point(12, 12);
+            this.dgInventory.Name = "dgInventory";
+            this.dgInventory.ReadOnly = true;
+            this.dgInventory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgInventory.Size = new System.Drawing.Size(494, 315);
+            this.dgInventory.TabIndex = 16;
+            this.dgInventory.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgInventory_CellMouseEnter);
+            this.dgInventory.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgInventory_CellMouseLeave);
+            // 
+            // btnXMLSave
+            // 
+            this.btnXMLSave.Location = new System.Drawing.Point(515, 304);
+            this.btnXMLSave.Name = "btnXMLSave";
+            this.btnXMLSave.Size = new System.Drawing.Size(100, 23);
+            this.btnXMLSave.TabIndex = 17;
+            this.btnXMLSave.Text = "XML Save";
+            this.btnXMLSave.UseVisualStyleBackColor = true;
+            this.btnXMLSave.Click += new System.EventHandler(this.btnXMLSave_Click);
+            // 
+            // btnXMLLoad
+            // 
+            this.btnXMLLoad.Location = new System.Drawing.Point(618, 304);
+            this.btnXMLLoad.Name = "btnXMLLoad";
+            this.btnXMLLoad.Size = new System.Drawing.Size(100, 23);
+            this.btnXMLLoad.TabIndex = 18;
+            this.btnXMLLoad.Text = "XML Load";
+            this.btnXMLLoad.UseVisualStyleBackColor = true;
+            this.btnXMLLoad.Click += new System.EventHandler(this.btnXMLLoad_Click);
+            // 
+            // btnItemAdd
+            // 
+            this.btnItemAdd.Location = new System.Drawing.Point(515, 244);
+            this.btnItemAdd.Name = "btnItemAdd";
+            this.btnItemAdd.Size = new System.Drawing.Size(203, 23);
+            this.btnItemAdd.TabIndex = 19;
+            this.btnItemAdd.Text = "Add Item";
+            this.btnItemAdd.UseVisualStyleBackColor = true;
+            this.btnItemAdd.Click += new System.EventHandler(this.btnItemAdd_Click);
+            // 
+            // dgInventoryID
+            // 
+            this.dgInventoryID.HeaderText = "ID";
+            this.dgInventoryID.Name = "dgInventoryID";
+            this.dgInventoryID.ReadOnly = true;
+            this.dgInventoryID.Width = 50;
+            // 
+            // dgInventoryQuantity
+            // 
+            this.dgInventoryQuantity.HeaderText = "#";
+            this.dgInventoryQuantity.Name = "dgInventoryQuantity";
+            this.dgInventoryQuantity.ReadOnly = true;
+            this.dgInventoryQuantity.Width = 25;
+            // 
+            // dgInventoryName
+            // 
+            this.dgInventoryName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dgInventoryName.HeaderText = "Name";
+            this.dgInventoryName.Name = "dgInventoryName";
+            this.dgInventoryName.ReadOnly = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 604);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.btnItemAdd);
+            this.Controls.Add(this.btnXMLLoad);
+            this.Controls.Add(this.btnXMLSave);
+            this.Controls.Add(this.dgInventory);
             this.Controls.Add(this.nudQuality);
             this.Controls.Add(this.sliderQuality);
             this.Controls.Add(this.nudValue);
@@ -200,7 +270,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sliderQuality)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudQuality)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgInventory)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -220,9 +290,15 @@
         private System.Windows.Forms.NumericUpDown nudValue;
         private System.Windows.Forms.TrackBar sliderQuality;
         private System.Windows.Forms.NumericUpDown nudQuality;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dgInventory;
         private System.Windows.Forms.HelpProvider helpProvider1;
-        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ToolTip ItemToolTip;
+        private System.Windows.Forms.Button btnXMLSave;
+        private System.Windows.Forms.Button btnXMLLoad;
+        private System.Windows.Forms.Button btnItemAdd;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dgInventoryID;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dgInventoryQuantity;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dgInventoryName;
     }
 }
 

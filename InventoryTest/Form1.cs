@@ -7,22 +7,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace InventoryTest
 {
     public partial class Form1 : Form
     {
 
-        Dictionary<int, Item> ItemList = new Dictionary<int, Item>();
+        Dictionary<int, Item> itemList = new Dictionary<int, Item>();
+
+        Dictionary<int, Item> inventory = new Dictionary<int, Item>();
+
         //Item in Aushwal == ITEMNAME#ID
         int naechsteID = 0;
+
+        private string configFilePath = Application.StartupPath + "\\config.xml";
 
         public Form1()
         {
             InitializeComponent();
             cbItems.Items.Clear();
-            cbItems.SelectedIndex =  cbItems.Items.Add("-NewItem-");
-
+            cbItems.SelectedIndex = cbItems.Items.Add("-NewItem-");
+            btnXMLLoad_Click(null, null);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -34,7 +40,7 @@ namespace InventoryTest
         {
             if (tbID.Text == "")
             {
-                ItemList.Add(naechsteID, new Item(naechsteID, tbName.Text, (float)nudGewicht.Value, ENUMS.ITEMSLOT.Undefined, (float)nudValue.Value, true, (float)nudQuality.Value));
+                itemList.Add(naechsteID, new Item(naechsteID, tbName.Text, (float)nudGewicht.Value, ENUMS.ITEMSLOT.Undefined, (float)nudValue.Value, true, (float)nudQuality.Value));
 
                 cbItems.SelectedIndex = cbItems.Items.Add(tbName.Text + "#" + naechsteID.ToString());
                 naechsteID++;
@@ -45,11 +51,11 @@ namespace InventoryTest
                 string id = cbItems.Text.Substring(posDelimiter + 1, cbItems.Text.Length - (posDelimiter + 1));
 
                 //Item item = ItemList[int.Parse(id)];
-                ItemList[int.Parse(id)].name = tbName.Text;
-                ItemList[int.Parse(id)].id = int.Parse(tbID.Text);
-                ItemList[int.Parse(id)].gewicht = ItemList[int.Parse(id)].gewichtGesamt = (float)nudGewicht.Value;
-                ItemList[int.Parse(id)].wert = (float)nudValue.Value;
-                ItemList[int.Parse(id)].quality = (float)nudQuality.Value));
+                itemList[int.Parse(id)].name = tbName.Text;
+                itemList[int.Parse(id)].id = int.Parse(tbID.Text);
+                itemList[int.Parse(id)].gewicht = itemList[int.Parse(id)].gewichtGesamt = (float)nudGewicht.Value;
+                itemList[int.Parse(id)].wert = (float)nudValue.Value;
+                itemList[int.Parse(id)].quality = (float)nudQuality.Value;
 
 
                 cbItems.Items.RemoveAt(cbItems.SelectedIndex);
@@ -60,18 +66,18 @@ namespace InventoryTest
 
         private void cbItems_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int posDelimiter = cbItems.Text.LastIndexOf("#") ;
+            int posDelimiter = cbItems.Text.LastIndexOf("#");
             if (posDelimiter >= 0)
             {
                 string id = cbItems.Text.Substring(posDelimiter + 1, cbItems.Text.Length - (posDelimiter + 1));
-                Item item = ItemList[int.Parse(id)];
+                Item item = itemList[int.Parse(id)];
 
                 tbName.Text = item.name;
                 tbID.Text = item.id.ToString();
                 nudGewicht.Value = (decimal)item.gewicht;
                 nudQuality.Value = (decimal)item.quality;
                 nudValue.Value = (decimal)item.wert;
-                    
+
 
 
             }
@@ -121,12 +127,139 @@ namespace InventoryTest
 
         private void nudQuality_ValueChanged(object sender, EventArgs e)
         {
-            sliderQuality.Value = (int)(nudQuality.Value*100);
+            sliderQuality.Value = (int)(nudQuality.Value * 100);
         }
 
         private void sliderQuality_Scroll(object sender, EventArgs e)
         {
             nudQuality.Value = (decimal)((float)sliderQuality.Value / 100.0f);
         }
+
+        private void btnXMLSave_Click(object sender, EventArgs e)
+        {
+
+            XmlDocument xmlDoc = new XmlDocument();
+            XmlNode xmlDocNode = xmlDoc.CreateElement("Inventory_Test");
+
+            XmlNode xmlRoot = xmlDoc.CreateElement("Items");
+            XmlNode xmlChild;
+
+            foreach (Item item in itemList.Values)
+            {
+                xmlChild = xmlDoc.CreateElement(item.name);
+                //xmlChild.InnerText = item.id.ToString();
+
+                xmlChild.Attributes.Append(xmlDoc.CreateAttribute("ID")).InnerText = item.id.ToString();
+                xmlChild.Attributes.Append(xmlDoc.CreateAttribute("Weight")).InnerText = item.gewicht.ToString();
+                xmlChild.Attributes.Append(xmlDoc.CreateAttribute("Value")).InnerText = item.wert.ToString();
+                xmlChild.Attributes.Append(xmlDoc.CreateAttribute("Quality")).InnerText = item.quality.ToString();
+                xmlRoot.AppendChild(xmlChild);
+            }
+            xmlDocNode.AppendChild(xmlRoot);
+
+            xmlDoc.AppendChild(xmlDocNode);
+            Console.WriteLine("Config File = " + configFilePath);
+            xmlDoc.Save(configFilePath);
+
+
+
+        }
+
+        private void btnXMLLoad_Click(object sender, EventArgs e)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(configFilePath);
+
+            XmlNode xmlDocNode = xmlDoc.GetElementsByTagName("Inventory_Test")[0];
+            Item item;
+
+            itemList.Clear();
+            naechsteID = 0;
+
+            foreach (XmlNode xmlRoot in xmlDocNode.ChildNodes)
+            {
+                foreach (XmlNode xmlChild in xmlRoot.ChildNodes)
+                {
+                    if (xmlRoot.Name == "Items")
+                    {
+                        int itemID = int.Parse(xmlChild.Attributes["ID"].InnerText);
+
+                        if (itemID > naechsteID) naechsteID = itemID;
+                        item = new Item(itemID,xmlChild.Name);
+                        item.gewichtGesamt = item.gewicht = float.Parse(xmlChild.Attributes["Weight"].InnerText);
+                        item.wert = float.Parse(xmlChild.Attributes["Value"].InnerText);
+                        item.quality = float.Parse(xmlChild.Attributes["Quality"].InnerText);
+
+                        itemList.Add(itemID, item);
+                        cbItems.Items.Add(item.name+ "#" + itemID.ToString());
+                    }
+                    else
+                    {
+                        switch (xmlRoot.Name + "-" + xmlChild.Name)
+                        {
+
+                        }
+                    }
+                    cbItems.SelectedIndex = naechsteID;
+                }
+            }            
+        }
+
+        private void btnItemAdd_Click(object sender, EventArgs e)
+        {
+            if (tbID.Text != "")
+            {
+                if (inventory.ContainsKey(int.Parse(tbID.Text))) //Quantity + 1
+                {
+                    inventory[int.Parse(tbID.Text)].quantity++;
+                }
+                else
+                {
+                    inventory.Add(int.Parse(tbID.Text), itemList[int.Parse(tbID.Text)]);
+                }
+                RefreshInventoryView();
+            }
+
+        }
+
+        private void RefreshInventoryView()
+        {
+            dgInventory.Rows.Clear();
+            foreach (Item item in inventory.Values)
+            {
+                DataGridViewRow row = dgInventory.Rows[dgInventory.Rows.Add()];
+                row.Cells[dgInventoryID.Name].Value = item.id.ToString();
+                row.Cells[dgInventoryName.Name].Value = item.name.ToString();
+                row.Cells[dgInventoryQuantity.Name].Value = item.quantity.ToString();
+            }
+
+        }
+
+        private void dgInventory_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
+        {
+            dgInventory.ShowCellToolTips = true;
+
+            int id = int.Parse(dgInventory.Rows[e.RowIndex].Cells[dgInventoryID.Name].Value.ToString());
+            DataGridViewCell curCell = dgInventory.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+            Item item = inventory[id];
+            curCell.ToolTipText =
+                item.name + "\n" +
+                "Wert = " + item.wert.ToString() + "\n" +
+                "Qualität = " + item.quality.ToString() + "\n" +
+                "Gewicht = " + item.gewicht.ToString() + "\n" +
+                "GewichtGes = " + (item.gewicht * item.quantity).ToString();
+
+            
+            Console.WriteLine("Enter: " + e.RowIndex.ToString());
+        }
+
+        private void dgInventory_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            ItemToolTip.ShowAlways = false;
+            Console.WriteLine("Leave: " + e.RowIndex.ToString());
+        }
+
+        
     }
 }
