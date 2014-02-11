@@ -185,7 +185,9 @@
             this.dgInventory.Location = new System.Drawing.Point(12, 12);
             this.dgInventory.Name = "dgInventory";
             this.dgInventory.ReadOnly = true;
+            this.dgInventory.RowHeadersVisible = false;
             this.dgInventory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgInventory.ShowEditingIcon = false;
             this.dgInventory.Size = new System.Drawing.Size(494, 315);
             this.dgInventory.TabIndex = 16;
             this.dgInventory.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgInventory_CellMouseEnter);
